@@ -4,11 +4,10 @@
 # This way the sublist on the left side is always sorted.
 # Using a nested loop, we start from the last element of the sublist and compare it with the current value
 # If the inspected value is greater than the current value, we move it to the right
-# else we put the current value in the next index
+# else we put the current value in the next inspected value's index
 # If we reach the first element of the sublist, we put the current value in the first index
 
 def insertion_sort(lst):
-
     for i in range(1, len(lst)):
         current_value = lst[i]
 
@@ -26,9 +25,12 @@ def insertion_sort(lst):
                 break
         else:
             lst[lst.index(None)] = current_value
-    print(lst)
+
+    return lst
 
 
-lst = [5, 3, 2, 4]
+lst = [5, 3, 1, 2, 4]
 
-insertion_sort(lst)
+sorted_list = insertion_sort(lst)
+
+print(sorted_list)
