@@ -6,6 +6,8 @@ bool checkIfEndBinaryNumIsReached(const int* binaryRow, const int& size);
 
 void printArrayRow(const int* row, const int& size);
 
+void generateBinarySequence(const int& index, int*vector, const int& vectorSize);
+
 
 int main() {
     int rowSize;
@@ -46,3 +48,54 @@ void printArrayRow(const int* row, const int& size) {
         std::cout << row[i] << ' ';
     std::cout << '\n';
 }
+
+
+void generateBinarySequence(const int& index, int*vector, const int& vectorSize) {
+    if (index == vectorSize) {
+        printArrayRow(vector, vectorSize);
+        return;
+    }
+
+    for (int i = 0; i < 2; ++i) {
+        vector[index] = i;
+        generateBinarySequence(index + 1, vector, vectorSize);
+    }
+}
+
+
+/*
+0--
+    00-
+        000 -> 1. End
+        001 -> 2. End
+
+    01-
+        010 -> 3. End
+        011 -> 4. End
+1--
+    10-
+        100 -> 5. End
+        101 -> 6. End
+
+    11-
+        110 -> 7. End
+        111 -> 8. End
+
+----------
+| 1. 000 |
+|--------|
+| 2. 001 |
+|--------|
+| 3. 010 |
+|--------|
+| 4. 011 |
+|--------|
+| 5. 100 |
+|--------|
+| 6. 101 |
+|--------|
+| 7. 110 |
+|--------|
+| 8. 111 |
+----------
+*/
