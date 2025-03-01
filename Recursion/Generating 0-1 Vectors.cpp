@@ -27,7 +27,7 @@ int main() {
         }
     }
 
-    delete binaryRow;
+    delete[] binaryRow;
 
     return 0;
 }
