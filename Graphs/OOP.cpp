@@ -1,106 +1,118 @@
 class GraphEdge {
 private:
-    unsigned int fromNode;
-    unsigned int toNode;
+    unsigned int fromNodeValue;
+    unsigned int toNodeValue;
 
 public:
-    GraphEdge(const unsigned int fromNode, const unsigned int toNode)
-        : fromNode(fromNode), toNode(toNode) {}
+    GraphEdge(const unsigned int fromNodeValue, const unsigned int toNodeValue)
+        : fromNodeValue(fromNodeValue), toNodeValue(toNodeValue) {}
 
-    [[nodiscard]] unsigned int getFromNode() const {
-        return this->fromNode;
+    [[nodiscard]] unsigned int getFromNodeValue() const {
+        return this->fromNodeValue;
     }
 
-    [[nodiscard]] unsigned int getToNode() const {
-        return this->toNode;
+    [[nodiscard]] unsigned int getToNodeValue() const {
+        return this->toNodeValue;
     }
 };
 
 class Graph {
 private:
     unsigned int currentIndex;
-    GraphEdge** graphEdges;
-    unsigned int graphEdgesCount;
+    GraphEdge** graphEdges; // GraphEdge[]
+    unsigned int countGraphEdges;
 
 public:
-    explicit Graph(const unsigned int graphEdgesCount)
-        : currentIndex(0), graphEdges(new GraphEdge*[graphEdgesCount]{}), graphEdgesCount(graphEdgesCount) {}
+    explicit Graph(const unsigned int countGraphEdges)
+        : currentIndex(0), graphEdges(new GraphEdge*[countGraphEdges]{}), countGraphEdges(countGraphEdges) {}
 
-    Graph(const unsigned int graphEdgesCount, GraphEdge** graphEdges)
-        : currentIndex(graphEdgesCount), graphEdges(graphEdges), graphEdgesCount(graphEdgesCount) {}
+    Graph(const unsigned int countGraphEdges, GraphEdge** graphEdges)
+        : currentIndex(countGraphEdges), graphEdges(graphEdges), countGraphEdges(countGraphEdges) {}
 
-    void addEdge(const unsigned int fromNode, const unsigned int toNode) {
-        if (this->currentIndex >= this->graphEdgesCount)
-            throw std::invalid_argument("Invalid number of edges.");
+    Graph(const Graph& other) = delete;
 
-        this->graphEdges[this->currentIndex] = new GraphEdge{fromNode, toNode};
+    Graph& operator=(const Graph& other) = delete;
+
+    void addEdge(const unsigned int fromNodeValue, const unsigned int toNodeValue) {
+        if (this->currentIndex >= this->countGraphEdges)
+            throw std::invalid_argument("Number of edges overflows predefined size.");
+
+        this->graphEdges[this->currentIndex] = new GraphEdge{fromNodeValue, toNodeValue};
         ++this->currentIndex;
     }
 
-    [[nodiscard]] std::vector<GraphEdge*> getRelatedNodes(const unsigned int node) const {
-        std::vector<GraphEdge*> edges;
-
+    [[nodiscard]] GraphEdge** getRelatedNodes(const unsigned int nodeValue, unsigned int& relatedNodesSize) const {
+        relatedNodesSize = 0;
         for (unsigned int i = 0; i < this->currentIndex; ++i) {
-            if (this->graphEdges[i]->getFromNode() == node) {
-                edges.push_back(this->graphEdges[i]);
+            if (this->graphEdges[i]->getFromNodeValue() == nodeValue) {
+                ++relatedNodesSize;
             }
         }
 
-        return edges;
+        GraphEdge** relatedNodes = new GraphEdge*[relatedNodesSize]{};
+        unsigned int indexRelatedNodes = 0;
+
+        for (unsigned int i = 0; i < this->currentIndex; ++i) {
+            if (this->graphEdges[i]->getFromNodeValue() == nodeValue) {
+                relatedNodes[indexRelatedNodes++] = this->graphEdges[i];
+            }
+        }
+
+        return relatedNodes;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Graph& graph);
 
     ~Graph() {
-        for (unsigned int i = 0; i < this->currentIndex; ++i) {
-            delete this->graphEdges[i];
+        for (unsigned int index = 0; index < this->currentIndex; ++index) {
+            delete this->graphEdges[index];
         }
         delete[] this->graphEdges;
     }
 };
 
 std::ostream& operator<<(std::ostream& os, const Graph& graph) {
-    for (unsigned int i = 0; i < std::min(graph.currentIndex, graph.graphEdgesCount); ++i) {
-        os << graph.graphEdges[i]->getFromNode() << " -> " << graph.graphEdges[i]->getToNode() << std::endl;
+    for (unsigned int index = 0; index < std::min(graph.currentIndex, graph.countGraphEdges); ++index) {
+        os << graph.graphEdges[index]->getFromNodeValue() << " -> " << graph.graphEdges[index]->getToNodeValue() << std::endl;
     }
     return os;
 }
 
 int main() {
-    // Graph graph{22};
+    Graph g{22};
 
-    // graph.addEdge(0, 3);
-    // graph.addEdge(3, 0);
-    //
-    // graph.addEdge(0, 6);
-    // graph.addEdge(6, 0);
-    //
-    // graph.addEdge(3, 5);
-    // graph.addEdge(5, 3);
-    //
-    // graph.addEdge(3, 1);
-    // graph.addEdge(1, 3);
-    //
-    // graph.addEdge(5, 1);
-    // graph.addEdge(1, 5);
-    //
-    // graph.addEdge(5, 2);
-    // graph.addEdge(2, 5);
-    //
-    // graph.addEdge(2, 1);
-    // graph.addEdge(1, 2);
-    //
-    // graph.addEdge(2, 4);
-    // graph.addEdge(4, 2);
-    //
-    // graph.addEdge(4, 1);
-    // graph.addEdge(1, 4);
-    //
-    // graph.addEdge(4, 6);
-    // graph.addEdge(6, 4);
-    //
-    // graph.addEdge(6, 1);
-    // graph.addEdge(1, 6);
+    g.addEdge(0, 3);
+    g.addEdge(3, 0);
+
+    g.addEdge(0, 6);
+    g.addEdge(6, 0);
+
+    g.addEdge(3, 5);
+    g.addEdge(5, 3);
+
+    g.addEdge(3, 1);
+    g.addEdge(1, 3);
+
+    g.addEdge(5, 1);
+    g.addEdge(1, 5);
+
+    g.addEdge(5, 2);
+    g.addEdge(2, 5);
+
+    g.addEdge(2, 1);
+    g.addEdge(1, 2);
+
+    g.addEdge(2, 4);
+    g.addEdge(4, 2);
+
+    g.addEdge(4, 1);
+    g.addEdge(1, 4);
+
+    g.addEdge(4, 6);
+    g.addEdge(6, 4);
+
+    g.addEdge(6, 1);
+    g.addEdge(1, 6);
 
     GraphEdge* graphEdge1 = new GraphEdge(0, 3);
     GraphEdge* graphEdge2 = new GraphEdge(3, 0);
