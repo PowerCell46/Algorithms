@@ -2,6 +2,12 @@ class Graph {
 private:
     std::vector<std::vector<unsigned int>> matrix;
 
+    void increaseMatrixRows(const unsigned int newSize) {
+        const unsigned int numberOfNewRows = newSize - this->matrix.size();
+        for (unsigned int i = 0; i < numberOfNewRows; ++i)
+                this->matrix.emplace_back();
+    }
+
 public:
     Graph() : matrix() {}
 
@@ -34,12 +40,6 @@ public:
 
         this->matrix[smallerIndexNode].push_back(biggerIndexNode);
         this->matrix[biggerIndexNode].push_back(smallerIndexNode);
-    }
-
-    void increaseMatrixRows(const unsigned int newSize) {
-        const unsigned int numberOfNewRows = newSize - this->matrix.size();
-        for (unsigned int i = 0; i < numberOfNewRows; ++i)
-                this->matrix.emplace_back();
     }
 };
 
