@@ -29,7 +29,7 @@ public:
 };
 
 class Graph {
-    std::map<int, std::set<GraphNodeEdge*>> nodeRelationshipsMapper;
+    std::map<int, std::set<GraphNodeEdge*>> nodeRelationshipsMapper; // {1: {firstNodeValue: 1, secondNodeValue: 2, edgeWeight: 1}}
 
     static bool firstOrSecondNodeValueNotPresentInVisitedNodesSet(
         const std::set<int>& visitedNodesSet,
@@ -42,13 +42,13 @@ class Graph {
                 !visitedNodesSet.contains(graphNodeEdge->getFirstNodeValue()));
     }
 
-    // static bool firstAndSecondNodeValuePresentInVisitedNodesSet(
-    //     const std::set<int>& visitedNodesSet,
-    //     const GraphNodeEdge* graphNodeEdge
-    // ) {
-    //     return visitedNodesSet.contains(graphNodeEdge->getFirstNodeValue()) &&
-    //            visitedNodesSet.contains(graphNodeEdge->getSecondNodeValue());
-    // }
+    static bool firstAndSecondNodeValuePresentInVisitedNodesSet(
+        const std::set<int>& visitedNodesSet,
+        const GraphNodeEdge* graphNodeEdge
+    ) {
+        return visitedNodesSet.contains(graphNodeEdge->getFirstNodeValue()) &&
+               visitedNodesSet.contains(graphNodeEdge->getSecondNodeValue());
+    }
 
 public:
     explicit Graph(const std::string& relationships) {
@@ -58,15 +58,15 @@ public:
         while (std::getline(strStream, currentLine, ';')) {
             std::istringstream currentLineStream{currentLine};
 
-            std::string firstNodeStr, secondNodeStr, edgeWeightStr;
+            std::string firstNodeValueStr, secondNodeValueStr, edgeWeightStr;
 
-            std::getline(currentLineStream, firstNodeStr, '-');
-            std::getline(currentLineStream, secondNodeStr, ':');
+            std::getline(currentLineStream, firstNodeValueStr, '-');
+            std::getline(currentLineStream, secondNodeValueStr, ':');
             std::getline(currentLineStream, edgeWeightStr);
 
             this->addRelationship(
-                std::stoi(firstNodeStr),
-                std::stoi(secondNodeStr),
+                std::stoi(firstNodeValueStr),
+                std::stoi(secondNodeValueStr),
                 std::stoul(edgeWeightStr)
             );
         }
@@ -82,22 +82,22 @@ public:
 
         GraphNodeEdge* graphNodeEdge = new GraphNodeEdge{firstNodeValue, secondNodeValue, edgeWeight};
 
-        if (nodeRelationshipsMapper.contains(firstNodeValue))
+        if (this->nodeRelationshipsMapper.contains(firstNodeValue))
             this->nodeRelationshipsMapper[firstNodeValue].insert(graphNodeEdge);
         else
-            this->nodeRelationshipsMapper[firstNodeValue] = {graphNodeEdge};
+            this->nodeRelationshipsMapper[firstNodeValue] = std::set<GraphNodeEdge*>{graphNodeEdge};
 
         if (this->nodeRelationshipsMapper.contains(secondNodeValue))
             this->nodeRelationshipsMapper[secondNodeValue].insert(graphNodeEdge);
         else
-            this->nodeRelationshipsMapper[secondNodeValue] = {graphNodeEdge};
+            this->nodeRelationshipsMapper[secondNodeValue] = std::set<GraphNodeEdge*>{graphNodeEdge};
     }
 
     std::vector<int> primsAlgorithm(const int nodeValue) {
         if (!this->nodeRelationshipsMapper.contains(nodeValue))
             throw std::invalid_argument("The passed in nodeValue is not valid.");
 
-        std::vector<int> visitedNodesVector;
+        std::vector<int> visitedNodesVector; // Keeps the insertion order
         visitedNodesVector.reserve(this->nodeRelationshipsMapper.size());
         std::set<int> visitedNodesSet;
 
@@ -105,40 +105,40 @@ public:
         visitedNodesSet.insert(nodeValue);
 
         std::set<GraphNodeEdge*> potentialGraphNodeEdges = this->nodeRelationshipsMapper[nodeValue];
-        while (visitedNodesSet.size() < this->nodeRelationshipsMapper.size()) {
-            unsigned int smallestEdgeWeight = INT_MAX;
-            GraphNodeEdge* smallestGraphNodeEdge = nullptr;
+        while (visitedNodesVector.size() < this->nodeRelationshipsMapper.size()) {
+            unsigned int smallestPotentialEdgeWeight = INT_MAX;
+            GraphNodeEdge* smallestPotentialGraphNodeEdge = nullptr;
 
             for (auto potentialGraphNodeEdgeIter = potentialGraphNodeEdges.begin(); potentialGraphNodeEdgeIter != potentialGraphNodeEdges.end();) {
                 if (firstOrSecondNodeValueNotPresentInVisitedNodesSet(visitedNodesSet, *potentialGraphNodeEdgeIter)) {
-                    if ((*potentialGraphNodeEdgeIter)->getEdgeWeight() < smallestEdgeWeight) {
-                        smallestEdgeWeight = (*potentialGraphNodeEdgeIter)->getEdgeWeight();
-                        smallestGraphNodeEdge = *potentialGraphNodeEdgeIter;
+                    if ((*potentialGraphNodeEdgeIter)->getEdgeWeight() < smallestPotentialEdgeWeight) {
+                        smallestPotentialEdgeWeight = (*potentialGraphNodeEdgeIter)->getEdgeWeight();
+                        smallestPotentialGraphNodeEdge = *potentialGraphNodeEdgeIter;
                     }
                     ++potentialGraphNodeEdgeIter;
 
-                } else /* if firstAndSecondNodeValuePresentInVisitedNodesSet(visitedNodesSet, *potentialGraphNodeEdgeIter) */ {
+                } else /* if (firstAndSecondNodeValuePresentInVisitedNodesSet(visitedNodesSet, *potentialGraphNodeEdgeIter)) */ {
                     potentialGraphNodeEdgeIter = potentialGraphNodeEdges.erase(potentialGraphNodeEdgeIter);
                 }
             }
 
-            if (smallestGraphNodeEdge == nullptr) {
-                throw std::runtime_error("Didn't find next smallest graphNodeEdge.");
+            if (smallestPotentialGraphNodeEdge == nullptr) {
+                throw std::runtime_error("Error occurred while finding the next smallest graphNodeEdge.");
             }
 
-            if (visitedNodesSet.contains(smallestGraphNodeEdge->getFirstNodeValue())) {
-                visitedNodesVector.push_back(smallestGraphNodeEdge->getSecondNodeValue());
-                visitedNodesSet.insert(smallestGraphNodeEdge->getSecondNodeValue());
+            if (visitedNodesSet.contains(smallestPotentialGraphNodeEdge->getFirstNodeValue())) {
+                visitedNodesVector.push_back(smallestPotentialGraphNodeEdge->getSecondNodeValue());
+                visitedNodesSet.insert(smallestPotentialGraphNodeEdge->getSecondNodeValue());
 
-                const std::set<GraphNodeEdge*>& newEdges = this->nodeRelationshipsMapper[smallestGraphNodeEdge->getSecondNodeValue()];
-                potentialGraphNodeEdges.insert(newEdges.begin(), newEdges.end());
+                const std::set<GraphNodeEdge*>& newPotentialGraphNodeEdges = this->nodeRelationshipsMapper[smallestPotentialGraphNodeEdge->getSecondNodeValue()];
+                potentialGraphNodeEdges.insert(newPotentialGraphNodeEdges.begin(), newPotentialGraphNodeEdges.end());
 
             } else {
-                visitedNodesVector.push_back(smallestGraphNodeEdge->getFirstNodeValue());
-                visitedNodesSet.insert(smallestGraphNodeEdge->getFirstNodeValue());
+                visitedNodesVector.push_back(smallestPotentialGraphNodeEdge->getFirstNodeValue());
+                visitedNodesSet.insert(smallestPotentialGraphNodeEdge->getFirstNodeValue());
 
-                const std::set<GraphNodeEdge*>& newEdges = this->nodeRelationshipsMapper[smallestGraphNodeEdge->getFirstNodeValue()];
-                potentialGraphNodeEdges.insert(newEdges.begin(), newEdges.end());
+                const std::set<GraphNodeEdge*>& newPotentialGraphNodeEdges = this->nodeRelationshipsMapper[smallestPotentialGraphNodeEdge->getFirstNodeValue()];
+                potentialGraphNodeEdges.insert(newPotentialGraphNodeEdges.begin(), newPotentialGraphNodeEdges.end());
             }
         }
 
@@ -147,7 +147,6 @@ public:
 
     ~Graph() {
         std::set<GraphNodeEdge*> uniqueGraphNodeEdges;
-
         for (const auto& [nodeValue, graphNodeEdges] : this->nodeRelationshipsMapper) {
             for (GraphNodeEdge* graphNodeEdge : graphNodeEdges) {
                 uniqueGraphNodeEdges.insert(graphNodeEdge);
@@ -167,9 +166,8 @@ int main() {
     Graph graph{"1-2:4;1-3:2;1-4:1;2-5:3;2-3:5;3-5:6;3-4:8;4-5:7"};
     std::vector<int> primsAlgorithmResultVector = graph.primsAlgorithm(1);
 
-    for (const int& nodeValue : primsAlgorithmResultVector) {
+    for (const int& nodeValue : primsAlgorithmResultVector)
         std::cout << nodeValue << " ";
-    }
 
     return 0;
 }
