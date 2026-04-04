@@ -153,8 +153,8 @@ public:
             }
         }
 
-        for (const GraphNodeEdge* uniqueGraphNodeEdge : uniqueGraphNodeEdges) {
-            delete uniqueGraphNodeEdge;
+        for (const GraphNodeEdge* graphNodeEdge : uniqueGraphNodeEdges) {
+            delete graphNodeEdge;
         }
     }
 };
