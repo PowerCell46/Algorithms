@@ -140,6 +140,9 @@ public:
                 const std::set<GraphNodeEdge*>& newPotentialGraphNodeEdges = this->nodeRelationshipsMapper[smallestPotentialGraphNodeEdge->getFirstNodeValue()];
                 potentialGraphNodeEdges.insert(newPotentialGraphNodeEdges.begin(), newPotentialGraphNodeEdges.end());
             }
+
+            // Erase the newly added graphNodeEdge, so you don't iterate through it next time
+            potentialGraphNodeEdges.erase(smallestPotentialGraphNodeEdge);
         }
 
         return visitedNodesVector;
